@@ -6,7 +6,17 @@ import org.springframework.stereotype.Service;
 import java.util.function.Consumer;
 
 @Service
-public class UpdateViewUseCase {
+public class UpdateViewUseCase implements Consumer<DomainEvent>{
+//    private BusRepository bus;
+    private ViewUpdater viewUpdater;
 
-    //Complete the implementation of this class
+    public UpdateViewUseCase(ViewUpdater viewUpdater) {
+//        this.bus = bus;
+        this.viewUpdater = viewUpdater;
+    }
+    @Override
+    public void accept(DomainEvent domainEvent){
+//        bus.publish(domainEvent);
+        viewUpdater.applyEvent(domainEvent);
+    }
 }

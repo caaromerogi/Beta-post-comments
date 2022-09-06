@@ -1,17 +1,17 @@
-package com.posada.santiago.betapostsandcomments.business.gateways.model;
+package com.posada.santiago.betapostsandcomments.APPRENTICESbetapostscomments.business.gateways.model;
 
 public class CommentViewModel {
-    private String id;
     private String postId;
+    private String id;
     private String author;
     private String content;
 
     public CommentViewModel() {
     }
 
-    public CommentViewModel(String id, String postId, String author, String content) {
-        this.id = id;
+    public CommentViewModel(String postId, String id, String author, String content) {
         this.postId = postId;
+        this.id = id;
         this.author = author;
         this.content = content;
     }

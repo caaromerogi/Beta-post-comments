@@ -2,7 +2,11 @@ package com.posada.santiago.betapostsandcomments.APPRENTICESbetapostscomments.ap
 
 
 
+import co.com.sofka.domain.generic.DomainEvent;
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.posada.santiago.betapostsandcomments.APPRENTICESbetapostscomments.application.adapters.bus.Notification;
 import com.posada.santiago.betapostsandcomments.APPRENTICESbetapostscomments.business.usecases.UpdateViewUseCase;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +23,16 @@ public class QueueHandler implements Consumer<String> {
 
     @Override
     public void accept(String received) {
-        //Finish the implementation of this Method
+        Notification notification = Notification.from(received);
+        String type = notification.getType().replace("alphapostsandcomments", "betapostsandcomments.APPRENTICESbetapostscomments");
+
+        try {
+           DomainEvent event = (DomainEvent) gson.fromJson(notification.getBody(), Class.forName(type));
+            useCase.accept(event);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+
+
     }
 }
