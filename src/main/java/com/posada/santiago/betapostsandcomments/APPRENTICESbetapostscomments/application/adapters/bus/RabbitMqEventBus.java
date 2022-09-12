@@ -3,8 +3,11 @@ package com.posada.santiago.betapostsandcomments.APPRENTICESbetapostscomments.ap
 
 import co.com.sofka.domain.generic.DomainEvent;
 import com.google.gson.Gson;
+import com.posada.santiago.betapostsandcomments.APPRENTICESbetapostscomments.application.config.RabbitMqConfig;
 import com.posada.santiago.betapostsandcomments.APPRENTICESbetapostscomments.business.gateways.EventBus;
 //import com.posada.santiago.betapostsandcomments.business.gateways.EventBus;
+import com.posada.santiago.betapostsandcomments.APPRENTICESbetapostscomments.business.gateways.model.CommentViewModel;
+import com.posada.santiago.betapostsandcomments.APPRENTICESbetapostscomments.business.gateways.model.PostViewModel;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 
@@ -17,15 +20,26 @@ public class RabbitMqEventBus implements EventBus {
         this.rabbitTemplate = rabbitTemplate;
     }
 
-    @Override
-    public void publish(DomainEvent event) {
-        var notification = new Notification(
-                event.getClass().getTypeName(),
-                gson.toJson(event)
-        );
-        //Find a way to send this notification through the predefined queues in the rabbitMq configuration,
-        //To that specific exchange and queues bases on the type of event
 
+//    @Override
+//    public void publish(DomainEvent event) {
+//        var notification = new Notification(
+//                event.getClass().getTypeName(),
+//                gson.toJson(event)
+//        );
+//        //Find a way to send this notification through the predefined queues in the rabbitMq configuration,
+//        //To that specific exchange and queues bases on the type of event
+//
+//    }
+
+    @Override
+    public void publishPostViewModel(PostViewModel postViewModel) {
+        rabbitTemplate.convertAndSend(RabbitMqConfig.EXCHANGE, RabbitMqConfig.PROXY_ROUTING_KEY_POST_CREATED, gson.toJson(postViewModel).getBytes());
+    }
+
+    @Override
+    public void publishAddComment(CommentViewModel commentViewModel) {
+        rabbitTemplate.convertAndSend(RabbitMqConfig.EXCHANGE, RabbitMqConfig.PROXY_ROUTING_KEY_COMMENT_ADDED, gson.toJson(commentViewModel).getBytes());
     }
 
     @Override

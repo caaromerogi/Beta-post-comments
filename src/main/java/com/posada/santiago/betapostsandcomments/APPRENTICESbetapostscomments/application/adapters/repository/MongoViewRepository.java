@@ -14,6 +14,8 @@ import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 @Repository
 public class MongoViewRepository implements DomainViewRepository {
     private final ReactiveMongoTemplate template;
@@ -27,13 +29,14 @@ public class MongoViewRepository implements DomainViewRepository {
     @Override
     public Mono<PostViewModel> findByAggregateId(String aggregateId) {
         /**Make the implementation, using the template, to find a post by its aggregateId*/
-        return template.findById(aggregateId, PostViewModel.class);
+        Query query = new Query(Criteria.where("aggregateId").is(aggregateId));
+        return template.findOne(query,PostViewModel.class);
     }
 
     @Override
     public Flux<PostViewModel> findAllPosts() {
         /**make the implementation, using the template, of the method find all posts that are stored in the db*/
-        return null;
+        return template.findAll(PostViewModel.class);
     }
 
     @Override
@@ -43,12 +46,14 @@ public class MongoViewRepository implements DomainViewRepository {
     }
 
     @Override
-    public Mono<UpdateResult> addCommentToPost(CommentViewModel comment) {
+    public Mono<PostViewModel> addCommentToPost(CommentViewModel comment) {
         Query query = new Query(Criteria.where("aggregateId").is(comment.getPostId()));
-        Update update = new Update().addToSet("comments", comment);
-        /** make the implementation, using the template, to find the post in the database that you want to add the comment to,
-         * then add the comment to the list of comments and using the Update class update the existing post
-         * with the new list of comments*/
-        return template.upsert(query,update,PostViewModel.class);
+        Mono<PostViewModel> post =template.findOne(query, PostViewModel.class);
+        return post.flatMap(postD -> {
+            List<CommentViewModel> comments = postD.getComments();
+            comments.add(comment);
+            postD.setComments(comments);
+            return template.save(postD);
+        });
     }
 }

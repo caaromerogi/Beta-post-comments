@@ -1,6 +1,7 @@
 package com.posada.santiago.betapostsandcomments.APPRENTICESbetapostscomments.business.usecases;
 
 import co.com.sofka.domain.generic.DomainEvent;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.function.Consumer;

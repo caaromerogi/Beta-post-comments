@@ -10,5 +10,5 @@ public interface DomainViewRepository {
     Mono<PostViewModel> findByAggregateId(String aggregateId);
     Flux<PostViewModel> findAllPosts();
     Mono<PostViewModel> saveNewPost(PostViewModel post);
-    Mono<UpdateResult> addCommentToPost(CommentViewModel comment);
+    Mono<PostViewModel> addCommentToPost(CommentViewModel comment);
 }
