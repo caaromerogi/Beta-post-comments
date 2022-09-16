@@ -5,6 +5,8 @@ import com.posada.santiago.betapostsandcomments.APPRENTICESbetapostscomments.app
 import com.posada.santiago.betapostsandcomments.APPRENTICESbetapostscomments.business.gateways.model.PostViewModel;
 import com.posada.santiago.betapostsandcomments.APPRENTICESbetapostscomments.business.usecases.BringAllPostsUseCase;
 import com.posada.santiago.betapostsandcomments.APPRENTICESbetapostscomments.business.usecases.BringPostById;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,6 +20,7 @@ import static org.springframework.web.reactive.function.server.RouterFunctions.r
 
 @Configuration
 public class QueryHandler {
+    private final static Logger logger= LoggerFactory.getLogger(QueryHandler.class);
     @Autowired
     MongoViewRepository repository;
 
@@ -27,10 +30,15 @@ public class QueryHandler {
             Mono<PostViewModel> postViewModel = bringPostById.apply(request.pathVariable("id"));
             return postViewModel.hasElement().flatMap(b-> {
                 if(b){
+                    logger.info("Post found successfully");
                     return ServerResponse.ok().contentType(MediaType.APPLICATION_JSON)
                             .body(BodyInserters.fromPublisher(postViewModel, PostViewModel.class));                }
                 return ServerResponse.notFound().build();
-            });
+            })
+                    .onErrorResume(error -> {
+                        logger.error("An error occurred bringing a post by id" +error.getMessage());
+                        return ServerResponse.badRequest().build();
+                    });
 
         });
     }
@@ -38,8 +46,17 @@ public class QueryHandler {
     @Bean
     public RouterFunction<ServerResponse> findAllPosts(BringAllPostsUseCase bringAllPostsUseCase){
         return route(GET("/get/AllPosts"), request -> {
-           return ServerResponse.ok().contentType(MediaType.APPLICATION_JSON)
-                   .body(bringAllPostsUseCase.get(),PostViewModel.class);
+            return bringAllPostsUseCase.get().collectList()
+                    .flatMap(posts -> {
+                        logger.info("Get all posts request success");
+                        return ServerResponse.ok().bodyValue(posts);
+                    })
+                    .onErrorResume(error -> {
+                        logger.error("Get all posts request failed "+error.getMessage());
+                        return ServerResponse.badRequest().build();
+                    });
+//           return ServerResponse.ok().contentType(MediaType.APPLICATION_JSON)
+//                   .body(bringAllPostsUseCase.get(),PostViewModel.class);
         });
     }
     //Create a route that allows you to make a Get Http request that brings you all the posts and also a post by its id
